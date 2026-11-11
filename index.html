@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Как установить DeepSeek и пользоваться им</title>
+<style>
+  :root{
+    --bg:#f4f6ff; --card:#ffffff; --ink:#1f2433; --soft:#5d6478;
+    --blue:#4d6bfe; --blue-dark:#3351e0; --blue-soft:#e6ebff;
+    --warm:#fff1e2; --warm-ink:#8a3b00; --line:#dde3f7; --ok:#1f8a4c; --red:#d63b3b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14172a; --card:#1d2138; --ink:#eef1ff; --soft:#aab2cf;
+           --blue:#7b92ff; --blue-dark:#9fb0ff; --blue-soft:#263057;
+           --warm:#3a2a1c; --warm-ink:#ffcf9f; --line:#313a63; --ok:#6fe0a0; --red:#e25b5b; }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:19px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 72px}
+  .ds{color:var(--blue);font-weight:800;letter-spacing:-.2px}
+  p{margin:0 0 14px}
+  ul,ol{padding-left:24px;margin:0 0 14px}
+  li{margin-bottom:9px}
+  b{font-weight:700}
+
+  /* шапка */
+  .hero{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}
+  .hero-text{flex:1 1 300px}
+  .hero svg{flex:0 0 140px;width:140px;height:auto}
+  h1{font-size:34px;line-height:1.2;margin:0 0 12px;color:var(--blue);font-weight:900}
+  h2{font-size:28px;line-height:1.25;margin:0 0 14px;color:var(--blue);font-weight:900;
+     display:flex;gap:10px;align-items:center}
+  h2 svg{width:38px;height:30px;flex:none}
+  .lead{font-size:21px}
+
+  /* красная плашка */
+  .warn{background:var(--red);color:#fff;border-radius:18px;padding:18px 20px;margin:16px 0}
+  .warn p{margin:0 0 10px}
+  .warn p:last-child{margin:0}
+  .warn h3{margin:0 0 10px;font-size:20px;text-transform:uppercase;letter-spacing:.3px}
+
+  /* яркие кнопки-переходы */
+  nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:18px 0 26px}
+  nav a{display:block;text-align:center;text-decoration:none;font-weight:700;font-size:18px;
+        padding:14px 12px;border-radius:99px;background:var(--blue);color:#fff;
+        box-shadow:0 4px 0 var(--blue-dark)}
+  nav a:active{transform:translateY(3px);box-shadow:0 1px 0 var(--blue-dark)}
+
+  /* карточки */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;
+        padding:22px 20px;margin:22px 0;scroll-margin-top:12px}
+  .tip{background:var(--warm);color:var(--warm-ink);border-radius:14px;padding:14px 16px;margin:14px 0}
+  .ok{color:var(--ok);font-weight:700}
+  .ticks{list-style:none;padding:0}
+  .ticks li{padding-left:34px;position:relative}
+  .ticks li::before{content:"✓";position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;
+        background:var(--blue);color:#fff;font-size:15px;display:grid;place-items:center;font-weight:700;line-height:1}
+
+  /* шаги */
+  .step{display:flex;gap:14px;align-items:flex-start;margin-bottom:20px}
+  .num{flex:none;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;
+       font-weight:800;display:grid;place-items:center;font-size:21px}
+  .step-body{flex:1;min-width:0}
+  .shot{width:100%;max-width:250px;display:block;margin:6px auto 14px;border-radius:18px;
+        border:1px solid var(--line);box-shadow:0 6px 18px rgba(77,107,254,.15)}
+
+  /* кнопки */
+  .btn{display:block;text-align:center;text-decoration:none;font-weight:700;
+       background:var(--blue);color:#fff;padding:16px 18px;border-radius:16px;
+       margin:12px 0;border:0;width:100%;font-size:19px;cursor:pointer;font-family:inherit;
+       box-shadow:0 4px 0 var(--blue-dark)}
+  .btn.light{background:var(--blue-soft);color:var(--blue-dark);box-shadow:none;border:2px solid var(--blue)}
+  .stores{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:520px){ .stores{grid-template-columns:1fr} }
+
+  /* промпты */
+  .prompt-title{font-weight:800;font-size:20px;margin:22px 0 6px;color:var(--ink)}
+  .prompt{background:var(--blue-soft);border:2px dashed var(--blue);border-radius:16px;
+          padding:16px;white-space:pre-wrap;font-size:17px;line-height:1.6;margin-bottom:8px}
+
+  /* вкладки телефон/компьютер */
+  .tabs{display:flex;gap:10px;margin-bottom:16px}
+  .tab{flex:1;padding:14px;border-radius:14px;border:2px solid var(--blue);background:transparent;
+       color:var(--blue-dark);font:700 19px inherit;font-family:inherit;cursor:pointer}
+  .tab.on{background:var(--blue);color:#fff}
+  .pane{display:none}
+  .pane.on{display:block}
+
+  /* чек-лист */
+  .check label{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:8px;
+        border:1px solid var(--line);border-radius:14px;cursor:pointer}
+  .check input{width:24px;height:24px;flex:none;margin-top:3px;accent-color:var(--blue)}
+
+  .small{font-size:16px;color:var(--soft)}
+
+  /* ===== графика ===== */
+  body{background-image:radial-gradient(var(--line) 1.3px,transparent 1.3px);background-size:24px 24px;counter-reset:s}
+
+  /* шапка-карточка с градиентом и кругами */
+  .hero-card{background:linear-gradient(135deg,#4d6bfe 0%,#6a5cff 60%,#8b6bff 100%);color:#fff;
+             border-radius:30px;padding:28px 22px;position:relative;overflow:hidden;
+             box-shadow:0 14px 34px rgba(77,107,254,.35)}
+  .hero-card::before{content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;
+             border-radius:50%;border:32px solid rgba(255,255,255,.12)}
+  .hero-card::after{content:"";position:absolute;left:-50px;bottom:-80px;width:220px;height:220px;
+             border-radius:50%;background:rgba(255,255,255,.08)}
+  .hero-card>*{position:relative;z-index:1}
+  .hero-card h1{color:#fff}
+  .hero-card .ds{color:#fff;border-bottom:3px solid #ffd166}
+  .bubbles{margin-top:16px;display:grid;gap:8px}
+  .bub{max-width:92%;padding:10px 14px;border-radius:16px;font-size:16px;line-height:1.45}
+  .bub.q{background:#fff;color:#1f2433;border-bottom-left-radius:4px;justify-self:start}
+  .bub.a{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);
+         border-bottom-right-radius:4px;justify-self:end}
+
+  /* заголовки: волнистая линия снизу */
+  .card h2{display:block}
+  .card h2 svg{display:inline-block;vertical-align:middle;margin-right:10px}
+  .card h2::after{content:"";display:block;height:10px;margin-top:8px;
+        background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10' viewBox='0 0 24 10'%3E%3Cpath d='M0 5 Q6 0 12 5 T24 5' fill='none' stroke='%234d6bfe' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x}
+
+  /* большие номера разделов */
+  .sec{counter-increment:s;position:relative;overflow:hidden}
+  .sec::after{content:"0" counter(s);position:absolute;right:14px;top:2px;font-size:84px;font-weight:900;
+        line-height:1;color:var(--blue-soft);pointer-events:none;z-index:0}
+  .sec>*{position:relative;z-index:1}
+
+  /* пунктир, соединяющий шаги */
+  .step{position:relative}
+  .step:not(:last-of-type)::before{content:"";position:absolute;left:19px;top:46px;bottom:-22px;
+        border-left:3px dotted var(--blue);z-index:0}
+  .step .num{position:relative;z-index:1;box-shadow:0 0 0 5px var(--card)}
+  .step.last::before{display:none}
+
+  /* плитки «что умеет» */
+  #umeet .ticks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+  #umeet .ticks li{padding:16px;border-radius:18px;background:var(--blue-soft);border:2px solid var(--blue);margin:0}
+  #umeet .ticks li::before{position:static;display:block;width:auto;height:auto;background:none;
+        font-size:34px;margin-bottom:6px;color:inherit}
+  #umeet .ticks li:nth-child(1)::before{content:"💬"}
+  #umeet .ticks li:nth-child(2)::before{content:"🍽️"}
+  #umeet .ticks li:nth-child(3)::before{content:"✍️"}
+  #umeet .ticks li:nth-child(4)::before{content:"🌍"}
+  #umeet .ticks li:nth-child(5)::before{content:"🎓"}
+  #umeet .ticks li:nth-child(6)::before{content:"🔁"}
+
+  /* схема из трёх шагов */
+  .flow{display:flex;align-items:center;gap:8px;margin:8px 0 20px}
+  .fb{flex:1;text-align:center;background:var(--blue-soft);border:2px solid var(--blue);
+      border-radius:18px;padding:12px 6px;font-weight:700;font-size:17px}
+  .fb b{display:block;width:32px;height:32px;line-height:32px;margin:0 auto 4px;border-radius:50%;
+        background:var(--blue);color:#fff}
+  .ar{color:var(--blue);font-size:24px;font-weight:900}
+
+  /* ===== телефон: шире текст, крупнее кнопки ===== */
+  @media (max-width:560px){
+    body{font-size:18px}
+    .wrap{padding:12px 10px 56px}
+    .hero-card{padding:22px 16px;border-radius:24px}
+    .hero svg{flex-basis:90px;width:90px}
+    h1{font-size:28px}
+    h2{font-size:24px}
+    .lead{font-size:19px}
+    nav{grid-template-columns:1fr 1fr;gap:8px}
+    nav a{font-size:16px;padding:12px 8px}
+    .card{padding:18px 14px;border-radius:20px;margin:18px 0}
+    .sec::after{font-size:56px}
+    .shot{max-width:min(100%,320px)}
+    .prompt{font-size:16px;padding:14px}
+    .flow{gap:4px}
+    .fb{font-size:15px;padding:10px 2px}
+    .step{gap:10px}
+    .btn{font-size:18px}
+  }
+</style>
+</head>
+<body>
+
+<!-- Китёнок -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="whale" viewBox="0 0 120 90">
+    <path d="M6 48C6 22 34 8 62 12c16 2 28 10 34 22 4-8 8-18 18-22 0 14-4 26-12 34C96 66 80 82 54 82 26 82 6 72 6 48Z" fill="currentColor"/>
+    <path d="M22 58c18 14 48 14 68-2-8 16-30 24-48 18-10-4-16-8-20-16Z" fill="#fff" opacity=".28"/>
+    <circle cx="34" cy="40" r="6" fill="#fff"/><circle cx="35" cy="41" r="2.6" fill="#1f2433"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+
+  <div class="hero hero-card">
+    <div class="hero-text">
+      <h1>Как установить DeepSeek и пользоваться им</h1>
+      <p class="lead"><span class="ds">DeepSeek</span> — это ИИ, который ответит на всё, что вы захотите узнать. <b>Просто задайте вопрос.</b></p>
+      <div class="bubbles">
+        <div class="bub q">Составь меню на выходные. В холодильнике: творог, курица, яйца, капуста</div>
+        <div class="bub a">Готово! Суббота: сырники, куриный суп, запеканка ✓</div>
+      </div>
+    </div>
+    <svg class="whale" style="color:#fff" viewBox="0 0 120 90" role="img" aria-label="Синий китёнок DeepSeek"><use href="#whale"/></svg>
+  </div>
+
+  <div class="warn">
+    <p>Сейчас многие пользуются <b>DeepSeek</b>, поэтому <b>нагрузка очень большая</b>. Из-за этого возможны сбои, медленные ответы и проблемы с регистрацией.</p>
+    <p>Не переживайте. Через несколько дней, когда наплыв людей станет меньше, всё наладится. В обычное время DeepSeek работает отлично.</p>
+  </div>
+
+  <p class="small">Для быстрой навигации по странице нажимайте на кнопки ниже ↓</p>
+
+  <nav>
+    <a href="#umeet">Что умеет DeepSeek?</a>
+    <a href="#skachat">Как скачать?</a>
+    <a href="#nachat">Как начать пользоваться?</a>
+    <a href="#voprosy">Как задавать вопросы?</a>
+    <a href="#poisk">Функция «Поиск»</a>
+    <a href="#rassuzhdenie">Функция «Рассуждение»</a>
+  </nav>
+
+  <!-- 1. ЧТО УМЕЕТ -->
+  <section class="card sec" id="umeet">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Что умеет <span class="ds">DeepSeek</span>?</h2>
+    <p>Это ИИ-помощник. Вы пишете ему обычными словами, он отвечает. Он может:</p>
+    <ul class="ticks">
+      <li><b>Ответить на вопрос.</b> Объяснить простыми словами, дать основные факты.</li>
+      <li><b>Составить меню или план.</b> На выходные, на неделю, на поездку.</li>
+      <li><b>Написать текст.</b> Письмо, поздравление, пост, описание.</li>
+      <li><b>Перевести.</b> С другого языка и на другой.</li>
+      <li><b>Объяснить сложное.</b> На примере из жизни, как новичку.</li>
+      <li><b>Переписать, если не понравилось.</b> Короче, теплее, проще. Сколько угодно раз.</li>
+    </ul>
+    <div class="tip">Он не знает вас и вашу жизнь. Всё, что вы ему расскажете, он использует. Чего не расскажете, он может придумать, поэтому важное проверяйте.</div>
+    <div class="tip"><b>Картинки он не рисует.</b> В чате DeepSeek он пишет слова: меню, списки, тексты, рецепты.</div>
+  </section>
+
+  <!-- 2. КАК СКАЧАТЬ -->
+  <section class="card sec" id="skachat">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Как скачать?</h2>
+    <p>Главное: <b>это бесплатно.</b> Приложение называется «DeepSeek», его выпускает сама компания DeepSeek. Платить за него не нужно.</p>
+    <p>Скачайте приложение на телефон:</p>
+    <div class="stores">
+      <a class="btn light" href="https://apps.apple.com/app/id6737597349" target="_blank" rel="noopener">App Store (iPhone)</a>
+      <a class="btn light" href="https://play.google.com/store/apps/details?id=com.deepseek.chat" target="_blank" rel="noopener">Google Play (Android)</a>
+      <a class="btn light" style="grid-column:1/-1" href="https://www.rustore.ru/catalog/app/com.deepseek.chat" target="_blank" rel="noopener">RuStore (Android и Huawei)</a>
+    </div>
+    <p>Или откройте в браузере, на телефоне или компьютере. Ничего скачивать не нужно:</p>
+    <a class="btn" href="https://www.deepseek.com/en/" target="_blank" rel="noopener">Официальный сайт DeepSeek</a>
+    <a class="btn light" href="https://chat.deepseek.com" target="_blank" rel="noopener">Сразу открыть чат</a>
+    <p><b>Удобный способ, если вы за компьютером.</b> Откройте официальный сайт, нажмите <b>«Get App»</b> («Скачать приложение») вверху справа и наведите камеру телефона на QR-код. Телефон откроет страницу скачивания приложения.</p>
+    <img class="shot" style="max-width:340px" src="скрины в гид/shag-qr.png" alt="Кнопка Get App на сайте deepseek.com и QR-код для скачивания приложения">
+    <p class="small">Сканируйте код с самого сайта deepseek.com, а не с этой картинки. На сайте он всегда актуальный.</p>
+    <div class="tip"><b>Совет.</b> Войдите на компьютере и на телефоне через <b>один и тот же Google-аккаунт</b>. Тогда ваши разговоры будут общими, и начатое на компьютере можно продолжить в телефоне.</div>
+    <div class="tip">Ищете в магазине приложений? Пишите «DeepSeek». Иконка у приложения — синий китёнок, а разработчик — <b>DeepSeek</b>. Официальный сайт: <b>deepseek.com</b>.</div>
+  </section>
+
+  <!-- 3. КАК НАЧАТЬ -->
+  <section class="card sec" id="nachat">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Как начать пользоваться?</h2>
+    <p>Сначала скачайте приложение, потом один раз войдите через Google.</p>
+
+    <div class="step"><div class="num">1</div>
+      <div class="step-body">
+        <p><b>Скачайте приложение с официальной страницы.</b> Отсканируйте QR-код с сайта deepseek.com (он показан выше). Откроется вот такая страница: «DeepSeek app. Официальный ИИ-помощник от DeepSeek. Общайтесь с ведущими моделями бесплатно».</p>
+        <p>Нажмите <b>«Download for Android»</b> («Скачать для Android»), если у вас Android, или <b>«Download for iOS»</b> («Скачать для iPhone»), если у вас iPhone.</p>
+        <img class="shot" src="скрины в гид/shag0-skachat.jpg" alt="Официальная страница скачивания DeepSeek app: кнопки Download for Android и Download for iOS">
+        <div class="tip">Если выскочит окошко «Cookie Settings», выберите <b>«Necessary cookies only»</b> («Только необходимые»). <b>Если у вас Android и Google Play плохо работает</b>, это хороший способ. Кнопка «Download for Android» скачивает файл с официальной страницы, и ссылка может вести через <b>GitHub</b>. Так и должно быть. Телефон может предупредить, что файл не из магазина приложений. Для файла, который вы взяли по QR-коду с deepseek.com, это нормально. <b>Не скачивайте приложение с чужих сайтов</b>, там бывают подделки.<br><br><b>Телефон Huawei, нет Google Play или не открывается GitHub?</b> Ищите DeepSeek в магазине <b>RuStore</b> (rustore.ru). Он российский и работает на Huawei. Проверьте, что разработчик — DeepSeek.</div>
+      </div>
+    </div>
+
+    <div class="step"><div class="num">2</div>
+      <div class="step-body">
+        <p><b>Откройте приложение.</b> Увидите экран приветствия. Нажмите синюю кнопку <b>«Начать чат»</b>.</p>
+        <img class="shot" src="скрины в гид/shag1-privetstvie.jpg" alt="Экран приветствия DeepSeek с кнопкой «Начать чат»">
+      </div>
+    </div>
+
+    <div class="step"><div class="num">3</div>
+      <div class="step-body">
+        <p><b>Войдите.</b> Нажмите <b>«Продолжить с Google»</b>. Так проще всего, код ждать не надо. На iPhone можно войти через Apple ID. Если Google нет, нажмите «Регистрация» и войдите по почте.</p>
+        <img class="shot" src="скрины в гид/shag2-vhod.jpg" alt="Экран входа в DeepSeek: «Продолжить с Google», «Продолжить с паролем», «Регистрация»">
+      </div>
+    </div>
+
+    <div class="step last"><div class="num">4</div>
+      <div class="step-body">
+        <p><b>Готово.</b> Откроется чат. Внизу строка, куда писать. Над ней две кнопки: «Поиск» и «Рассуждение». О них ниже.</p>
+        <img class="shot" src="скрины в гид/shag3-chat.jpg" alt="Чат DeepSeek: строка для сообщения и кнопки «Рассуждение» и «Поиск»">
+      </div>
+    </div>
+
+    <p class="ok">После того как вы создали аккаунт, можно начинать пользоваться!</p>
+
+    <div class="warn">
+      <h3>Что если не получается зарегистрироваться?</h3>
+      <p>Сейчас много людей используют DeepSeek, поэтому регистрация новых пользователей может занимать больше времени или временно не работать.</p>
+      <p><b>Что можно попробовать сделать сейчас?</b><br>
+      1. Войти через Google или Apple ID, чтобы не получать код.<br>
+      2. Если и так не получается, повторить попытку чуть позже. Через 10–15 минут или завтра.</p>
+      <p>Не переживайте. Через несколько дней, когда наплыв людей станет меньше, всё наладится.</p>
+    </div>
+  </section>
+
+  <!-- ТЕЛЕФОН / КОМПЬЮТЕР -->
+  <section class="card" id="vid">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Как это выглядит</h2>
+    <div class="tabs">
+      <button class="tab on" type="button" data-pane="p-phone">На телефоне</button>
+      <button class="tab" type="button" data-pane="p-pc">На компьютере</button>
+    </div>
+
+    <div class="pane on" id="p-phone">
+      <img class="shot" src="скрины в гид/shag3-chat.jpg" alt="Чат DeepSeek в приложении на телефоне">
+      <ul class="ticks">
+        <li><b>Внизу</b> — строка, куда вы пишете или вставляете текст.</li>
+        <li><b>«Поиск»</b> — над строкой. Когда подсвечена голубым, ИИ ищет в интернете.</li>
+        <li><b>«Рассуждение»</b> — рядом. Для сложных задач. Для простых задач не нужна.</li>
+        <li><b>Плюс «+» в круге</b> справа вверху — начать новый разговор.</li>
+      </ul>
+    </div>
+
+    <div class="pane" id="p-pc">
+      <img class="shot" style="max-width:100%" src="скрины в гид/kompyuter-chat.png" alt="Официальный сайт deepseek.com: строка для вопроса, кнопки DeepThink и Search, кнопка Chat with DeepSeek">
+      <ul class="ticks">
+        <li>Откройте в браузере официальный сайт <b>deepseek.com</b>. Когда сайт попросит, войдите через Google.</li>
+        <li><b>Посередине</b> — длинная строка «Ask anything, explore together» («Спрашивайте что угодно»). Туда вставляйте текст и нажимайте синюю стрелку справа.</li>
+        <li>Под строкой — кнопки <b>DeepThink</b> («Рассуждение») и <b>Search</b> («Поиск»). Надписи могут быть на английском, это нормально.</li>
+        <li>Кнопка <b>«Chat with DeepSeek»</b> под строкой открывает полный чат. Там слева список ваших разговоров и кнопка «New chat».</li>
+      </ul>
+      <div class="tip">На компьютере писать длинные тексты удобнее: можно вставить текст целиком одним движением.</div>    </div>
+  </section>
+
+  <!-- НАСТРОЙКИ -->
+  <section class="card" id="nastroyki">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Настройте под себя</h2>
+    <p>В приложении есть экран <b>«Настройки»</b>. Потратьте на него минуту, дальше будет удобнее.</p>
+    <img class="shot" src="скрины в гид/nastroyki.png" alt="Экран «Настройки» в приложении DeepSeek: язык, внешний вид, размер шрифта, голос">
+    <ul class="ticks">
+      <li><b>Язык.</b> Выберите «русский», и все надписи в приложении будут по-русски.</li>
+      <li><b>Размер шрифта.</b> Сделайте крупнее, если мелкий текст трудно читать.</li>
+      <li><b>Внешний вид.</b> Светлая или тёмная тема. Выберите ту, что приятнее глазам.</li>
+      <li><b>Голос и основной язык.</b> Можно не печатать вопрос, а <b>продиктовать</b> его. В пункте «Основной язык» выберите тот, на котором говорите, и приложение лучше вас поймёт.</li>
+    </ul>
+    <div class="tip">Диктовать удобно, когда перечисляете продукты или рассказываете задачу: говорите как есть, а ИИ сам превратит это в связный запрос.</div>
+  </section>
+
+  <!-- 4. КАК ЗАДАВАТЬ ВОПРОСЫ -->
+  <section class="card sec" id="voprosy">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Как задавать вопросы?</h2>
+    <ul class="ticks">
+      <li>Обращайтесь с любыми вопросами, задачами или запросами.</li>
+      <li><span class="ds">DeepSeek</span> поможет с поиском информации, написанием текстов, переводом, объяснением сложных тем и многим другим.</li>
+      <li>Если вам не полностью понятен ответ, задайте дополнительные вопросы для разъяснения.</li>
+    </ul>
+    <p><b>Будьте максимально конкретны.</b> Чем точнее ваш запрос, тем точнее будет ответ. Хороший запрос отвечает на три вопроса:</p>
+    <div class="flow">
+      <div class="fb"><b>1</b>Что нужно</div><span class="ar">➜</span>
+      <div class="fb"><b>2</b>Для кого</div><span class="ar">➜</span>
+      <div class="fb"><b>3</b>Какой ответ</div>
+    </div>
+    <p><b>Пример:</b> меню на выходные из того, что лежит в холодильнике. Слова в [квадратных скобках] замените на свои.</p>
+    <div class="prompt" id="p1">Ты помощник по домашней кулинарии. Составь меню на субботу и воскресенье (завтрак, обед, ужин) для семьи: [сколько человек] из того, что есть в холодильнике.
+
+В холодильнике есть: [перечислите продукты].
+
+Блюда простые. Каждое блюдо одной строкой.</div>
+    <button class="btn" type="button" data-copy="p1">Скопировать запрос</button>
+    <p><b>Экспериментируйте.</b> Не бойтесь пробовать разные формулировки. Не понравился ответ? Напишите: «Сделай короче», «Объясни проще», «Добавь пример». <span class="ds">DeepSeek</span> создан, чтобы помогать вам в самых разных ситуациях.</p>
+  </section>
+
+  <!-- 5. ПОИСК -->
+  <section class="card sec" id="poisk">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Функция «Поиск в интернете»</h2>
+    <p>Эта функция ищет информацию в сети и анализирует её для вас.</p>
+    <p><i>Например, вы хотите приготовить новое блюдо. Можно попросить <span class="ds">DeepSeek</span> найти проверенный рецепт в интернете.</i></p>
+    <p><b>Чтобы её включить, нужно нажать на значок «Поиск».</b> Он над строкой, где вы пишете. Когда он подсвечен голубым, поиск работает. Чтобы выключить, нажмите ещё раз.</p>
+    <img class="shot" src="скрины в гид/shag3-chat.jpg" alt="Кнопка «Поиск» над строкой для сообщения">
+    <p><b>Пример:</b></p>
+    <div class="prompt" id="p4">Найди проверенный рецепт [блюдо] на популярных кулинарных сайтах. Дай ингредиенты с граммами и шаги по порядку. Укажи, где ты это нашёл.</div>
+    <button class="btn" type="button" data-copy="p4">Скопировать пример</button>
+    <p>В итоге нейросеть даст вам список и расскажет о нём. А ещё вы можете спрашивать подробнее про каждый пункт отдельно.</p>
+    <div class="tip">Проверяйте, откуда он взял сведения. Если источника нет, не доверяйте.</div>
+  </section>
+
+  <!-- 6. РАССУЖДЕНИЕ -->
+  <section class="card sec" id="rassuzhdenie">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Функция «Рассуждение» (глубокое мышление)</h2>
+    <p>Это механизм, который заставляет нейросеть «размышлять» над задачей поэтапно, вместо того чтобы выдавать ответ сразу. Она разбивает задачу на несколько маленьких шагов, анализирует их по очереди и только потом формирует итог.</p>
+    <p>Это помогает учитывать больше деталей и контекста. В итоге результат получается точнее и логичнее.</p>
+    <p><b>Чтобы включить её, нажмите на кнопку «Рассуждение»</b> (в браузере на компьютере она называется «DeepThink»). Чтобы выключить, нажмите ещё раз.</p>
+    <div class="tip"><b>В этом режиме ответы идут дольше обычного.</b></div>
+    <p><b>Когда она вам пригодится:</b></p>
+    <ul class="ticks">
+      <li>Составить меню на всю неделю с учётом бюджета.</li>
+      <li>Составить план, с чего начать и что делать потом.</li>
+      <li>Сравнить два варианта и объяснить, какой лучше.</li>
+    </ul>
+    <p>Для простого вопроса или текста она не нужна. Хватает простого режима, он быстрее.</p>
+  </section>
+
+  <!-- КАК ПРОВЕРИТЬ -->
+  <section class="card" id="proverka">
+    <h2><svg style="color:var(--blue)" viewBox="0 0 120 90"><use href="#whale"/></svg>Как проверить ответ</h2>
+    <p>ИИ может ошибиться или придумать лишнее. Перед тем как пользоваться ответом, пройдитесь по списку. Ставьте галочки.</p>
+    <div class="check">
+      <label><input type="checkbox"><span>Цифры, даты, названия <b>сверили</b> с надёжным источником.</span></label>
+      <label><input type="checkbox"><span>Ответ <b>подходит именно вам</b>: вашей семье, вашему случаю.</span></label>
+      <label><input type="checkbox"><span>Нет того, что вам <b>нельзя или не нужно</b>.</span></label>
+      <label><input type="checkbox"><span>Если ИИ назвал источник, <b>вы его открыли</b>. Нет источника, не доверяйте.</span></label>
+      <label><input type="checkbox"><span>Текст звучит как <b>вы</b>. Если нет, напишите: «Перепиши проще и теплее».</span></label>
+    </div>
+    <p class="ok">Если что-то не нравится, просто напишите ИИ, что поправить. Он переделает.</p>
+  </section>
+
+  <p class="small">Гид сделан Инной Мардарь.</p>
+</div>
+
+<script>
+  // копирование запросов
+  var btns = document.querySelectorAll('[data-copy]');
+  btns.forEach(function (b) {
+    var label = b.textContent;
+    b.addEventListener('click', function () {
+      var t = document.getElementById(b.getAttribute('data-copy')).innerText;
+      function ok(){ b.textContent = 'Скопировано ✓'; setTimeout(function(){ b.textContent = label; }, 2500); }
+      function fail(){ b.textContent = 'Выделите текст и скопируйте вручную'; }
+      try { navigator.clipboard.writeText(t).then(ok, fail); } catch (e) { fail(); }
+    });
+  });
+  // вкладки телефон / компьютер
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (x) { x.classList.remove('on'); });
+      document.querySelectorAll('.pane').forEach(function (p) { p.classList.remove('on'); });
+      tab.classList.add('on');
+      document.getElementById(tab.getAttribute('data-pane')).classList.add('on');
+    });
+  });
+</script>
+</body>
+</html>
